@@ -240,7 +240,9 @@ async function addSeed(newSeed) {
         body: JSON.stringify(newSeed),
       }
     );
+    [lonIndex, latIndex] = getUserGridPosition();
     clientData.seeds = await response.json();
+    surroundingData[`grid_${lonIndex}_${latIndex}`].seeds = clientData.seeds;
   } catch (error) {
     console.error("Error posting seed:", error);
   }
