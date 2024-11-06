@@ -1,18 +1,21 @@
+:root {
+    --raisinBlack: #2E2C2F;
+    --payneGray: #475B63;
+    --cambridgeBlue: #729b79;
+    --ashGray: #BACDB0;
+    --lavenderBlush: #F3E8EE;
+    --headerHeight: 5rem;
+}
+
 html {
-    background-color: gray;
-    height: 100%;
-    /* Ensures html takes full height */
+    background-color: var(--ashGray);
 }
 
 body {
     font-family: "Lato", serif;
-    margin: 0 auto;
-    padding: 0.5rem;
-    max-width: 60svw;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    margin: 0;
 }
 
 main {
@@ -21,28 +24,26 @@ main {
     align-items: flex-start;
     justify-content: center;
     gap: 1rem;
-    padding: 1rem;
-    width: 100%;
+    padding: 1rem 0;
+    height: fit-content;
+    background-color: var(--ashGray);
 }
 
 header {
-    background-color: #333;
+    background-color: var(--raisinBlack);
     color: white;
-    padding: 1rem;
-    text-align: center;
-    width: 100%;
-    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: var(--headerHeight);
+}
+
+header h2 {
+    margin: 0;
 }
 
 canvas {
-    border: 0.25rem solid black;
-    border-radius: 0.5rem;
-}
-
-h1,
-h2,
-h3 {
-    margin: 0;
+    border: 0.15rem solid var(--raisinBlack);
 }
 
 #ui-container {
@@ -50,4 +51,18 @@ h3 {
     flex-flow: column nowrap;
     align-items: center;
     gap: 0.5rem;
+}
+
+#btnView {
+    border: none;
+    background-color: var(--cambridgeBlue);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+#btnView:hover {
+    transform: scale(1.05);
 }

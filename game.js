@@ -1,4 +1,7 @@
 const cellSize = 35;
+const miniMapWidth = 180;
+const miniMapHeight = miniMapWidth / 2;
+
 let userLatitude,
   userLongitude,
   geoLoaded = false,
@@ -116,9 +119,6 @@ function setupGame(p) {
 
   function toggleView() {
     zoomedIn = !zoomedIn;
-    document.getElementById("btnView").innerText = zoomedIn
-      ? "Change to World View"
-      : "Change to Current Grid";
     p.redraw();
   }
 
@@ -241,9 +241,6 @@ function setupGame(p) {
 }
 
 function setupUI(p) {
-  const miniMapWidth = 180; // Set your desired mini-map width
-  const miniMapHeight = 90; // Set your desired mini-map height
-
   p.setup = () => {
     p.createCanvas(200, 135);
   };
@@ -299,13 +296,13 @@ function setupUI(p) {
     p.fill(255, 0, 0);
     p.ellipse(miniMapUserX, miniMapUserY, 6);
 
-    // Draw grid indexes
+    // Draw position coordinates.
     const [lonIndex, latIndex] = getUserGridPosition();
-    p.fill(0); // Set fill color for text
-    p.textSize(12); // Set text size
+    p.fill(0);
+    p.textSize(14);
     p.textAlign(p.CENTER, p.CENTER); // Center the text
     p.text(
-      `[${lonIndex}, ${latIndex}]`,
+      `(${lonIndex}, ${latIndex})`,
       miniMapX + miniMapWidth / 2,
       miniMapY + miniMapHeight + 15
     );
