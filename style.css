@@ -13,7 +13,9 @@ html {
 
 body {
     font-family: "Lato", serif;
+    color: var(--raisinBlack);
     display: flex;
+    align-items: center;
     flex-direction: column;
     margin: 0;
 }
@@ -21,11 +23,12 @@ body {
 main {
     display: flex;
     flex-flow: row wrap;
-    align-items: flex-start;
     justify-content: center;
+    align-items: stretch;
     gap: 1rem;
-    padding: 1rem 0;
+    padding: 2rem 1rem;
     height: fit-content;
+    width: fit-content;
     background-color: var(--ashGray);
 }
 
@@ -33,36 +36,201 @@ header {
     background-color: var(--raisinBlack);
     color: white;
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
     height: var(--headerHeight);
+    width: 100%;
 }
 
 header h2 {
     margin: 0;
 }
 
+header a {
+    color: white;
+    transition: scale 0.2s ease-in-out;
+}
+
 canvas {
     border: 0.15rem solid var(--raisinBlack);
 }
 
+a {
+    text-decoration: none;
+    text-underline-offset: 0.25rem;
+}
+
+button {
+    border: none;
+    background-color: var(--raisinBlack);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+button:hover {
+    background-color: rgba(46, 44, 47, 0.9);
+}
+
+form {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--lavenderBlush);
+    border: 0.1rem solid var(--payneGray);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    width: 15rem;
+    height: 15.5rem;
+    max-height: 13rem;
+    overflow: hidden;
+    transition: max-height 0.2s ease-in-out;
+}
+
+form label {
+    font-size: small;
+}
+
+form input {
+    padding: 0.25rem;
+    border: 0.05rem solid var(--payneGray);
+}
+
+form span {
+    text-align: center;
+    font-size: x-small;
+}
+
+form a {
+    color: royalblue;
+}
+
+form a:hover {
+    text-decoration: underline;
+}
+
+#game {
+    display: flex;
+    align-items: center;
+    background-color: var(--cambridgeBlue);
+    border-radius: 0.5rem;
+    padding: 1rem 2.5rem;
+}
+
+#btnView {
+    background-color: var(--cambridgeBlue);
+    color: white;
+}
+
+#btnView:hover {
+    background-color: rgba(114, 155, 121, 0.9);
+}
+
 #ui-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 2fr 1fr;
+    gap: 0 0.75rem;
+    color: whitesmoke;
+    background-color: var(--payneGray);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+}
+
+#ui-container>div {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.5rem;
+}
+
+#ui-buttons {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+#user-info {
+    font-size: 0.85rem;
+    margin: 0 0.25rem;
+}
+
+#username {
+    font-size: large;
+    text-transform: uppercase;
+}
+
+#actions {
+    display: inline-block;
+}
+
+#actions-label {
+    white-space: nowrap;
+}
+
+#actions-count {
+    padding: 0.1rem 0.2rem;
+    margin-right: 0.15rem;
+    border: 0.1rem solid var(--lavenderBlush);
+    word-wrap: break-word;
+}
+
+#formLogin {
+    max-height: 10rem;
+}
+
+#userFormContainer {
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
     gap: 0.5rem;
 }
 
-#btnView {
-    border: none;
-    background-color: var(--cambridgeBlue);
-    color: white;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: transform 0.2s ease-in-out;
+#msgError {
+    color: rebeccapurple;
+    margin: 0.25rem 0;
 }
 
-#btnView:hover {
-    transform: scale(1.05);
+@media (max-width: 1024px) {
+    #ui-container {
+        gap: 0.25rem 0.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    #game {
+        padding: 0;
+    }
+
+    #ui-container {
+        background-color: transparent;
+        color: var(--raisinBlack);
+        grid-template-rows: 1fr 1fr;
+        gap: 0.25rem;
+    }
+
+    #ui-container>*:nth-child(1) {
+        grid-column: 1;
+        /* Make the first row item appear in the first column */
+        grid-row: 1;
+    }
+
+    #ui-container>*:nth-child(2) {
+        grid-column: 1;
+        /* Make the second row item appear in the second column */
+        grid-row: 2;
+    }
+
+    #user-info {
+        font-size: x-small;
+        line-height: 1.5;
+        text-align: center;
+    }
+
+    #actions-count {
+        border: 0.1rem solid var(--payneGray);
+    }
 }

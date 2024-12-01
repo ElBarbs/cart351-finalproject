@@ -1,1 +1,1 @@
-# CART351 - Final Project
+# Digital Garden

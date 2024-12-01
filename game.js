@@ -1,33 +1,62 @@
-const cellSize = 35;
+const cellSize = 24;
 const miniMapWidth = 180;
 const miniMapHeight = miniMapWidth / 2;
 
 let userLatitude,
   userLongitude,
+  user,
+  selectedItem,
   geoLoaded = false,
   zoomedIn = true;
 const clientData = { seeds: [], environment: [] };
 const surroundingData = {};
 const assets = {};
 
-// P5.js instances for the game and UI.
-let game, ui;
+// P5.js instances.
+let game, map, inventory;
 
 // Initialize the application on window load.
 window.onload = () => {
-  navigator.geolocation.getCurrentPosition(initLocation);
+  fetch("get-user.php", {
+    method: "GET",
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.response === "success") {
+        user = data.user;
+        console.log(user);
+        document.getElementById("username").innerText = user.username;
+        document.getElementById(
+          "actions-count"
+        ).innerText = `${user.actions}/3`;
+        navigator.geolocation.getCurrentPosition(initGame);
+      }
+    });
+
+  document.getElementById("btnLogout").addEventListener("click", function () {
+    fetch("index.php", {
+      method: "POST",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.response === "success") {
+          window.location.href = "/login.php";
+        }
+      });
+  });
 };
 
-function initLocation(position) {
+function initGame(position) {
   userLatitude = position.coords.latitude;
   userLongitude = position.coords.longitude;
   geoLoaded = true;
-  // Initialize the game and UI instances.
+  // Initialize the game and map instances.
   game = new p5(setupGame, "game");
-  ui = new p5(setupUI, "ui");
+  map = new p5(setupMap, "map");
+  inventory = new p5(setupInventory, "inventory");
 }
 
-function getUserGridPosition() {
+function getUserTilePosition() {
   return [
     Math.floor(userLongitude / 0.0135),
     Math.floor(userLatitude / 0.0135),
@@ -37,14 +66,14 @@ function getUserGridPosition() {
 async function fetchWorldData() {
   try {
     const response = await fetch(
-      `data.php?lat=${userLatitude}&lon=${userLongitude}`,
+      `get-game-data.php?lat=${userLatitude}&lon=${userLongitude}`,
       { method: "GET", headers: { "Content-Type": "application/json" } }
     );
     const data = await response.json();
-    const [lonIndex, latIndex] = getUserGridPosition();
+    const [lonIndex, latIndex] = getUserTilePosition();
 
-    clientData.seeds = data[`grid_${lonIndex}_${latIndex}`]?.seeds || [];
-    data[`grid_${lonIndex}_${latIndex}`]?.environment.forEach((item) => {
+    clientData.seeds = data[`${lonIndex}_${latIndex}`]?.seeds || [];
+    data[`${lonIndex}_${latIndex}`]?.environment.forEach((item) => {
       item.x = Math.floor(item.x / cellSize) * cellSize;
       item.y = Math.floor(item.y / cellSize) * cellSize;
       item.img = assets[item.type];
@@ -58,19 +87,22 @@ async function fetchWorldData() {
 
 async function addSeed(newSeed) {
   try {
-    const response = await fetch(
-      `data.php?lat=${userLatitude}&lon=${userLongitude}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newSeed),
-      }
-    );
-    [lonIndex, latIndex] = getUserGridPosition();
+    const response = await fetch("get-game-data.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "addSeed",
+        lat: userLatitude,
+        lon: userLongitude,
+        seed: newSeed,
+      }),
+    });
+
+    [userTileX, userTileY] = getUserTilePosition();
     clientData.seeds = await response.json();
-    surroundingData[`grid_${lonIndex}_${latIndex}`].seeds = clientData.seeds;
+    surroundingData[`${userTileX}_${userTileY}`].seeds = clientData.seeds;
   } catch (error) {
-    console.error("Error posting seed:", error);
+    console.error("Error adding seed: ", error);
   }
 }
 
@@ -88,6 +120,8 @@ function setupGame(p) {
       "grass_2",
       "grass_3",
       "grass_4",
+      "potted_plant",
+      "vine",
     ];
 
     assetNames.forEach((name) => {
@@ -99,7 +133,7 @@ function setupGame(p) {
 
   p.setup = () => {
     if (geoLoaded) {
-      const canvasSize = Math.floor(500 / cellSize) * cellSize;
+      const canvasSize = Math.floor(320 / cellSize) * cellSize;
       p.createCanvas(canvasSize, canvasSize);
       fetchWorldData();
       document
@@ -123,9 +157,11 @@ function setupGame(p) {
   }
 
   function drawZoomedView() {
+    p.cursor(p.ARROW);
     drawBackground();
     drawEnvironment();
     drawSeeds();
+    drawCursor();
   }
 
   function drawBackground() {
@@ -154,8 +190,24 @@ function setupGame(p) {
     });
   }
 
+  function drawCursor() {
+    const gridX = Math.floor(p.mouseX / cellSize) * cellSize;
+    const gridY = Math.floor(p.mouseY / cellSize) * cellSize;
+
+    if (
+      gridX >= 0 &&
+      gridX < p.width &&
+      gridY >= 0 &&
+      gridY < p.height &&
+      selectedItem
+    ) {
+      p.cursor(p.HAND);
+      p.image(assets[selectedItem], gridX, gridY, cellSize, cellSize);
+    }
+  }
+
   function drawWorldView() {
-    const [userGridX, userGridY] = getUserGridPosition();
+    const [userTileX, userTileY] = getUserTilePosition();
     const subCellSize = p.width / 3 / 14;
 
     for (let dx = -1; dx <= 1; dx++) {
@@ -168,7 +220,7 @@ function setupGame(p) {
 
         // Retrieve and draw environment and seeds for each cell
         drawCellData(
-          surroundingData[`grid_${userGridX + dx}_${userGridY + dy}`] || {},
+          surroundingData[`${userTileX + dx}_${userTileY + dy}`] || {},
           offsetX,
           offsetY,
           subCellSize
@@ -179,7 +231,7 @@ function setupGame(p) {
 
   function drawHighlightBorder(x, y) {
     p.noFill();
-    p.stroke(255, 0, 0);
+    p.stroke("#475B63");
     p.strokeWeight(1);
     p.rect(x, y, p.width / 3, p.height / 3);
   }
@@ -240,7 +292,7 @@ function setupGame(p) {
   };
 }
 
-function setupUI(p) {
+function setupMap(p) {
   p.setup = () => {
     p.createCanvas(200, 135);
   };
@@ -268,6 +320,7 @@ function setupUI(p) {
 
     // Draw grid lines on the mini-map for better orientation.
     p.stroke(150);
+    p.strokeWeight(1);
     for (let i = 0; i <= miniMapWidth; i += miniMapWidth / 10) {
       p.line(miniMapX + i, miniMapY, miniMapX + i, miniMapY + miniMapHeight); // Vertical lines
     }
@@ -277,7 +330,6 @@ function setupUI(p) {
 
     // Highlight X and Y axes.
     p.stroke(0);
-    p.strokeWeight(2);
     p.line(
       miniMapX,
       miniMapY + miniMapHeight / 2,
@@ -297,7 +349,7 @@ function setupUI(p) {
     p.ellipse(miniMapUserX, miniMapUserY, 6);
 
     // Draw position coordinates.
-    const [lonIndex, latIndex] = getUserGridPosition();
+    const [lonIndex, latIndex] = getUserTilePosition();
     p.fill(0);
     p.textSize(14);
     p.textAlign(p.CENTER, p.CENTER); // Center the text
@@ -306,5 +358,87 @@ function setupUI(p) {
       miniMapX + miniMapWidth / 2,
       miniMapY + miniMapHeight + 15
     );
+  }
+}
+
+function setupInventory(p) {
+  p.setup = () => {
+    p.createCanvas(200, 200);
+  };
+
+  p.draw = () => {
+    p.background(255);
+    drawInventory();
+  };
+
+  function drawInventory() {
+    const inventoryX = 10;
+    const inventoryY = 10;
+    const inventoryWidth = p.width - 20;
+    const inventoryHeight = p.height - 20;
+
+    p.cursor(p.ARROW);
+
+    p.fill(200, 200, 200, 150); // Semi-transparent background
+    p.rect(inventoryX, inventoryY, inventoryWidth, inventoryHeight); // Draw inventory background
+
+    function getItemIndex(index) {
+      const itemX = inventoryX + 12.5 + (index % 5) * (cellSize + 17.5);
+      const itemY = inventoryY + 15 + Math.floor(index / 5) * (cellSize + 10);
+      return [itemX, itemY];
+    }
+
+    user.inventory.forEach((item, index) => {
+      const [itemX, itemY] = getItemIndex(index);
+
+      // Change cursor to hand when hovering over an item.
+      if (
+        p.mouseX > itemX &&
+        p.mouseX < itemX + cellSize &&
+        p.mouseY > itemY &&
+        p.mouseY < itemY + cellSize
+      ) {
+        p.cursor(p.HAND);
+      }
+
+      // Highlight the selected item.
+      if (selectedItem === item.type) {
+        p.fill("#729b79");
+        p.circle(itemX + cellSize / 2, itemY + cellSize / 2, cellSize + 15);
+      }
+
+      // Display image.
+      p.noStroke();
+      p.fill(0);
+      p.image(assets[item.type], itemX, itemY, cellSize, cellSize);
+
+      // Display small circle with quantity.
+      p.fill("#2E2C2F");
+      p.circle(itemX + cellSize, itemY + cellSize, 20);
+      p.fill(255);
+      p.textSize(12);
+      p.textAlign(p.CENTER, p.CENTER);
+      p.text(item.quantity, itemX + cellSize, itemY + cellSize);
+    });
+
+    p.mousePressed = () => {
+      user.inventory.forEach((item, index) => {
+        const [itemX, itemY] = getItemIndex(index);
+
+        // Check if the mouse is within the bounds of the item
+        if (
+          p.mouseX > itemX &&
+          p.mouseX < itemX + cellSize &&
+          p.mouseY > itemY &&
+          p.mouseY < itemY + cellSize
+        ) {
+          if (selectedItem === item.type) {
+            selectedItem = null;
+          } else {
+            selectedItem = item.type;
+          }
+        }
+      });
+    };
   }
 }
