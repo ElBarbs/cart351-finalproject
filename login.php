@@ -3,7 +3,7 @@ include 'db.php';
 
 session_start();
 
-if (isset($_SESSION['user'])) {
+if (isset($_SESSION['username'])) {
     header('Location: /');
     exit;
 }
@@ -26,18 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($user && password_verify($password, $user['password'])) {
         $msg["response"] = "success";
-
-        $inventory = $user['inventory']->getArrayCopy();
-        $inventory = array_map(function ($item) {
-            return $item->getArrayCopy();
-        }, $inventory);
-
-        $userInfo = [
-            'username' => $user['username'],
-            'inventory' => $inventory,
-        ];
-
-        $_SESSION['user'] = $userInfo;
+        $_SESSION['username'] = $user['username'];
     } else {
         $msg["response"] = "error";
         $msg["error"] = "Invalid username or password.";

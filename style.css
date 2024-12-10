@@ -9,6 +9,7 @@
 
 html {
     background-color: var(--ashGray);
+    user-select: none;
 }
 
 body {
@@ -115,7 +116,6 @@ form a:hover {
 #game {
     display: flex;
     align-items: center;
-    background-color: var(--cambridgeBlue);
     border-radius: 0.5rem;
     padding: 1rem 2.5rem;
 }
@@ -132,10 +132,8 @@ form a:hover {
 #ui-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 2fr 1fr;
-    gap: 0 0.75rem;
-    color: whitesmoke;
-    background-color: var(--payneGray);
+    grid-template-rows: 3fr 2fr;
+    gap: 0.5rem;
     padding: 0.75rem;
     border-radius: 0.5rem;
 }
@@ -153,18 +151,33 @@ form a:hover {
     gap: 0.5rem;
 }
 
+#user-info-container {
+    background-color: white;
+    border: 0.15rem solid var(--raisinBlack);
+}
+
 #user-info {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.25rem;
+    margin: 0.5rem;
+    background-color: #DFDFDF;
     font-size: 0.85rem;
-    margin: 0 0.25rem;
+    height: 100%;
 }
 
 #username {
-    font-size: large;
+    font-size: medium;
     text-transform: uppercase;
+    color: white;
+    background-color: var(--cambridgeBlue);
+    text-align: center;
 }
 
 #actions {
+    padding: 0.25rem;
     display: inline-block;
+    font-size: smaller;
 }
 
 #actions-label {
@@ -172,9 +185,6 @@ form a:hover {
 }
 
 #actions-count {
-    padding: 0.1rem 0.2rem;
-    margin-right: 0.15rem;
-    border: 0.1rem solid var(--lavenderBlush);
     word-wrap: break-word;
 }
 
@@ -194,20 +204,12 @@ form a:hover {
     margin: 0.25rem 0;
 }
 
-@media (max-width: 1024px) {
-    #ui-container {
-        gap: 0.25rem 0.5rem;
-    }
-}
-
 @media (max-width: 640px) {
     #game {
         padding: 0;
     }
 
     #ui-container {
-        background-color: transparent;
-        color: var(--raisinBlack);
         grid-template-rows: 1fr 1fr;
         gap: 0.25rem;
     }
@@ -228,9 +230,5 @@ form a:hover {
         font-size: x-small;
         line-height: 1.5;
         text-align: center;
-    }
-
-    #actions-count {
-        border: 0.1rem solid var(--payneGray);
     }
 }

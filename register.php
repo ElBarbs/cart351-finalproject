@@ -3,7 +3,7 @@ include 'db.php';
 
 session_start();
 
-if (isset($_SESSION['user'])) {
+if (isset($_SESSION['username'])) {
     header('Location: /');
     exit;
 }
@@ -18,6 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (strlen($username) < 3) {
         $msg["response"] = "error";
         $msg["error"] = "Username must be at least 3 characters long.";
+        echo json_encode($msg);
+        exit;
+    }
+
+    if (strlen($username) > 14) {
+        $msg["response"] = "error";
+        $msg["error"] = "Username must be at most 14 characters long.";
         echo json_encode($msg);
         exit;
     }
@@ -69,22 +76,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newUser = [
         'username' => $username,
         'password' => $passwordHash,
+        'actions' => 3,
         'inventory' => array(
             array(
-                'type' => 'potted_plant',
-                'quantity' => 3
+                'name' => 'small_crops_0',
+                'quantity' => 2
             ),
             array(
-                'type' => 'vine',
-                'quantity' => 1
+                'name' => 'seed',
+                'variant' => ['a', 'b', 'c'][rand(0, 2)],
+                'state' => 0,
+                'quantity' => 2
             )
         ),
-        'actions' => 3
     ];
     $collectionUsers->insertOne($newUser);
 
-    unset($newUser['password']);
-    $_SESSION['user'] = $newUser;
+    $_SESSION['username'] = $username;
 
     $msg["response"] = "success";
     echo json_encode($msg);

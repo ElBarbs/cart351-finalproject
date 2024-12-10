@@ -2,7 +2,7 @@
 
 session_start();
 
-if (!isset($_SESSION['user'])) {
+if (!isset($_SESSION['username'])) {
   header('Location: /login.php');
   exit();
 }
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-  <script src="game.js"></script>
+  <script type="module" src="main.js"></script>
 </head>
 
 <body>
@@ -49,14 +49,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <button id="btnLogout">Logout</button>
         </div>
       </div>
-      <div id="user-info">
-        <span id="username"></span>
-        <span id="actions">
-          <span id="actions-count"></span>
-          <span id="actions-label"> actions left today.</span>
-        </span>
+      <div id="user-info-container">
+        <div id="user-info">
+          <span id="username"></span>
+          <span id="actions">
+            <span id="actions-count"></span>
+            <span id="actions-label"> actions left today.</span>
+          </span>
+        </div>
       </div>
-
     </div>
   </main>
 </body>
