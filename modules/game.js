@@ -188,7 +188,7 @@ export class Game {
   doAction = async () => {
     const p = this.p;
 
-    // Check if the cursor is within the canvas.
+    // Check if the mouse is within the canvas.
     if (
       !GameState.isTileView ||
       p.mouseX < 0 ||
@@ -199,10 +199,76 @@ export class Game {
       return;
     }
 
-    // Check if the cursor is on a seed or environment item.
     const gridX = Math.floor(p.mouseX / CELL_SIZE) * CELL_SIZE;
     const gridY = Math.floor(p.mouseY / CELL_SIZE) * CELL_SIZE;
-    if (
+
+    // Determine action type and call the corresponding handler.
+    const actionType = GameState.selectedItem.name;
+    if (this.actionHandlers[actionType]) {
+      await this.actionHandlers[actionType](gridX, gridY);
+    }
+  };
+
+  actionHandlers = {
+    seed: async (gridX, gridY) => {
+      if (this.isCellOccupied(gridX, gridY)) {
+        return;
+      }
+
+      const { variant } = GameState.selectedItem;
+      const existingCrop = GameState.tile.seeds.find(
+        (item) =>
+          item.x === gridX && item.y === gridY && item.name === "small_crops_0"
+      );
+
+      if (existingCrop) {
+        existingCrop.state++;
+        existingCrop.variant = variant;
+        existingCrop.name = `small_crops_${existingCrop.state}`;
+
+        if (!this.assets.hasOwnProperty(existingCrop.name)) {
+          this.assets[existingCrop.name] = this.p.loadImage(
+            `assets/${existingCrop.name}.png`
+          );
+        }
+
+        await updatePlant(existingCrop);
+      } else {
+        const newSeed = {
+          x: gridX,
+          y: gridY,
+          name: `seed_${variant}0`,
+          variant,
+          state: 0,
+        };
+
+        if (!this.assets.hasOwnProperty(newSeed.name)) {
+          this.assets[newSeed.name] = this.p.loadImage(
+            `assets/${newSeed.name}.png`
+          );
+        }
+
+        await plantSeed(newSeed);
+      }
+
+      this.updateActionCount();
+    },
+    small_crops_0: async (gridX, gridY) => {
+      const newCrop = {
+        x: gridX,
+        y: gridY,
+        name: "small_crops_0",
+        variant: "",
+        state: 0,
+      };
+
+      await plantSeed(newCrop);
+      this.updateActionCount();
+    },
+  };
+
+  isCellOccupied = (gridX, gridY) => {
+    return (
       GameState.tile.seeds.some(
         (seed) =>
           seed.x === gridX && seed.y === gridY && seed.name.includes("seed")
@@ -210,69 +276,12 @@ export class Game {
       GameState.tile.environment.some(
         (item) => item.x === gridX && item.y === gridY
       )
-    ) {
-      return;
-    }
+    );
+  };
 
-    if (GameState.selectedItem.name === "seed" && GameState.user.actions > 0) {
-      // If the seed is on a crop, add the seed to the crop.
-      if (
-        GameState.tile.seeds.some(
-          (item) =>
-            item.x === gridX &&
-            item.y === gridY &&
-            item.name === "small_crops_0"
-        )
-      ) {
-        const crop = GameState.tile.seeds.find(
-          (item) =>
-            item.x === gridX &&
-            item.y === gridY &&
-            item.name === "small_crops_0"
-        );
-
-        crop.state++;
-        crop.variant = GameState.selectedItem.variant;
-        crop.name = `small_crops_${crop.state}`;
-        if (!this.assets.hasOwnProperty(crop.name)) {
-          this.assets[crop.name] = this.p.loadImage(`assets/${crop.name}.png`);
-        }
-
-        updatePlant(crop).then(() => {
-          document.getElementById(
-            "actions-count"
-          ).innerText = `${GameState.user.actions}/3`;
-        });
-      } else {
-        plantSeed({
-          x: gridX,
-          y: gridY,
-          name: `${GameState.selectedItem.name}_${GameState.selectedItem.variant}${GameState.selectedItem.state}`,
-          variant: GameState.selectedItem.variant,
-          state: 0,
-        }).then(() => {
-          document.getElementById(
-            "actions-count"
-          ).innerText = `${GameState.user.actions}/3`;
-        });
-      }
-    } else if (
-      GameState.selectedItem.name === "small_crops_0" &&
-      GameState.user.actions > 0
-    ) {
-      const newCrop = {
-        x: gridX,
-        y: gridY,
-        name: GameState.selectedItem.name,
-        variant: "",
-        state: 0,
-      };
-
-      plantSeed(newCrop).then(() => {
-        document.getElementById(
-          "actions-count"
-        ).innerText = `${GameState.user.actions}/3`;
-      });
-    }
+  updateActionCount = () => {
+    document.getElementById(
+      "actions-count"
+    ).innerText = `${GameState.user.actions}/3`;
   };
 }
