@@ -147,7 +147,7 @@ export class Game {
     if (name.includes("rock")) return "#A9A9A9";
     if (name.includes("grass")) return "#228B22";
     if (name.includes("water")) return "#5D97E7";
-    if (name.includes("seed")) return "#8B4513";
+    if (name.includes("seed") || name.includes("crops")) return "#8B4513";
     return "#4C9557";
   };
 
