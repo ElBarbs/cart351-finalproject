@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $repeatPassword) {
         $msg["response"] = "error";
         $msg["error"] = "Passwords do not match.";
-        json_encode($msg);
+        echo json_encode($msg);
         exit;
     }
 

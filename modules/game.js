@@ -188,6 +188,7 @@ export class Game {
   doAction = async () => {
     const p = this.p;
 
+    // Check if the cursor is within the canvas.
     if (
       !GameState.isTileView ||
       p.mouseX < 0 ||
@@ -198,6 +199,7 @@ export class Game {
       return;
     }
 
+    // Check if the cursor is on a seed or environment item.
     const gridX = Math.floor(p.mouseX / CELL_SIZE) * CELL_SIZE;
     const gridY = Math.floor(p.mouseY / CELL_SIZE) * CELL_SIZE;
     if (
