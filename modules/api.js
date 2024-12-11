@@ -1,6 +1,7 @@
 import { API_ENDPOINTS } from "./config.js";
 import GameState from "./gameState.js";
 
+// Update the plant's growth stage.
 export async function updatePlant(seed) {
   try {
     if (GameState.user.actions <= 0) {
@@ -28,6 +29,7 @@ export async function updatePlant(seed) {
   }
 }
 
+// Plant a seed in the game.
 export async function plantSeed(seed) {
   try {
     if (GameState.user.actions <= 0) {
@@ -55,6 +57,7 @@ export async function plantSeed(seed) {
   }
 }
 
+// Update the user's action count and inventory after using a seed.
 function useSeed(data) {
   GameState.user.actions--;
 

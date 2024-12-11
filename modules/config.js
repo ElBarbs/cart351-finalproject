@@ -11,7 +11,5 @@ export const GEO_CONSTANTS = {
 };
 
 export const API_ENDPOINTS = {
-  GET_USER: "get-user.php",
   GET_GAME_DATA: "get-game-data.php",
-  LOGOUT: "index.php",
 };

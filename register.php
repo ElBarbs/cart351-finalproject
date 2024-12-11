@@ -1,13 +1,16 @@
 <?php
 include 'db.php';
 
+// Start session.
 session_start();
 
+// Redirect to index if logged in.
 if (isset($_SESSION['username'])) {
     header('Location: /');
     exit;
 }
 
+// Register.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = isset($_POST['username']) ? $_POST['username'] : null;
     $password = isset($_POST['password']) ? $_POST['password'] : null;
@@ -15,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $msg = array();
 
+    // Check if username is less than 3 characters.
     if (strlen($username) < 3) {
         $msg["response"] = "error";
         $msg["error"] = "Username must be at least 3 characters long.";
@@ -22,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Check if username is more than 14 characters.
     if (strlen($username) > 14) {
         $msg["response"] = "error";
         $msg["error"] = "Username must be at most 14 characters long.";
@@ -29,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Check if username contains profanity.
     $ch = curl_init("https://www.purgomalum.com/service/containsprofanity?text=$username");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
@@ -48,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     curl_close($ch);
 
+    // Check if username is already taken.
     $username = strtolower($username);
     $user = $collectionUsers->findOne(['username' => $username]);
 
@@ -58,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Check if password matches requirements.
     if (!preg_match('/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/', $password)) {
         $msg["response"] = "error";
         $msg["error"] = "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter and one number.";
@@ -65,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Check if passwords match.
     if ($password !== $repeatPassword) {
         $msg["response"] = "error";
         $msg["error"] = "Passwords do not match.";
@@ -72,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Add user to database.
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
     $newUser = [
         'username' => $username,
@@ -92,10 +102,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
     $collectionUsers->insertOne($newUser);
 
+    // Set the session username.
     $_SESSION['username'] = $username;
 
     $msg["response"] = "success";
     echo json_encode($msg);
+
     exit;
 }
 

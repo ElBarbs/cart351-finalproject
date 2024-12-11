@@ -1,19 +1,13 @@
 <?php
 include 'db.php';
 
+// Start session.
 session_start();
 
 $gridSize = 0.0135; // Approximate degrees corresponding to 1.5 km.
 $canvaSize = 312; // Size of the canvas in pixels.
 
-function getTileIndex($lon, $lat, $gridSize)
-{
-    $tileX = floor($lon / $gridSize);
-    $tileY = floor($lat / $gridSize);
-    return [$tileX, $tileY];
-}
-
-// Helper function to check if two elements are too close
+// Check if two elements are too close.
 function isTooClose($x, $y, $environment, $minDistance)
 {
     foreach ($environment as $element) {
@@ -25,6 +19,7 @@ function isTooClose($x, $y, $environment, $minDistance)
     return false;
 }
 
+// Generate random lifeforms.
 function generateRandomLifeforms($canvaSize)
 {
     $lifeforms = array(
@@ -67,6 +62,7 @@ function generateRandomLifeforms($canvaSize)
     return $lifeform;
 }
 
+// Generate random environment.
 function generateRandomEnvironment($canvaSize)
 {
     $envItems = array(
@@ -104,159 +100,113 @@ function generateRandomEnvironment($canvaSize)
     return $environment;
 }
 
+// Update plant (seed).
 function updatePlant($userLat, $userLon, $seed, $username)
 {
-    global $collectionTiles, $collectionUsers, $gridSize;
+    global $gridSize;
 
-    $tileID = implode('_', getTileIndex($userLon, $userLat, $gridSize));
+    $tileID = getTileID($userLon, $userLat, $gridSize);
+    $currentTile = getTile($tileID);
+    if (!$currentTile) return ['error' => 'Invalid tile.'];
 
-    $currentTile = $collectionTiles->findOne(['tileID' => $tileID]);
-
-    if (!$currentTile) {
-        return ['error' => 'Invalid tile.'];
-        exit;
-    } else {
-        $found = false;
-        foreach ($currentTile['seeds'] as $key => $currentSeed) {
-            if ($currentSeed['x'] == $seed['x'] && $currentSeed['y'] == $seed['y']) {
-                $currentTile['seeds'][$key] = $seed;
-                $found = true;
-                break;
-            }
+    $found = false;
+    foreach ($currentTile['seeds'] as $key => $currentSeed) {
+        if ($currentSeed['x'] === $seed['x'] && $currentSeed['y'] === $seed['y']) {
+            $currentTile['seeds'][$key] = $seed;
+            $found = true;
+            break;
         }
-
-        if (!$found) {
-            return ['error' => 'Invalid seed.'];
-            exit;
-        }
-
-        // Update the tile in the database.
-        $collectionTiles->updateOne(['tileID' => $tileID], ['$set' => ['seeds' => $currentTile['seeds']]]);
-
-        // Decrease the user's actions by 1.
-        $user = $collectionUsers->findOne(['username' => $username]);
-        if ($user['actions'] > 0) {
-            $collectionUsers->updateOne(['username' => $username], ['$inc' => ['actions' => -1]]);
-            $name = 'seed';
-            $collectionUsers->updateOne(['username' => $username, 'inventory.name' => $name], ['$inc' => ['inventory.$.quantity' => -1]]);
-            $collectionUsers->updateOne(
-                [
-                    'username' => $username,
-                    'inventory' => [
-                        '$elemMatch' => [
-                            'name' => $name,
-                            'quantity' => ['$lte' => 0]
-                        ]
-                    ]
-                ],
-                [
-                    '$pull' => ['inventory' => ['name' => $name]]
-                ]
-            );
-        }
-
-        return $currentTile['seeds'];
     }
+
+    if (!$found) return ['error' => 'Invalid seed.'];
+
+    updateTileSeeds($tileID, $currentTile['seeds']);
+    decrementUserAction($username, 'seed');
+
+    return $currentTile['seeds'];
 }
 
+// Plant seed.
 function plantSeed($userLat, $userLon, $seed, $username)
 {
-    global $collectionTiles, $collectionUsers, $gridSize;
+    global $gridSize;
 
-    $tileID = implode('_', getTileIndex($userLon, $userLat, $gridSize));
+    $tileID = getTileID($userLon, $userLat, $gridSize);
+    $currentTile = getTile($tileID);
+    if (!$currentTile) return ['error' => 'Invalid tile.'];
 
-    $currentTile = $collectionTiles->findOne(['tileID' => $tileID]);
+    $currentTile['seeds'][] = $seed;
+    updateTileSeeds($tileID, $currentTile['seeds']);
+    decrementUserAction($username, str_contains($seed['name'], 'seed') ? 'seed' : 'small_crops_0');
 
-    if (!$currentTile) {
-        return ['error' => 'Invalid tile.'];
-        exit;
-    } else {
-        // Update the seed array with the new seed.
-        $currentTile['seeds'][] = $seed;
-        // Update the tile in the database.
-        $collectionTiles->updateOne(['tileID' => $tileID], ['$set' => ['seeds' => $currentTile['seeds']]]);
+    return $currentTile['seeds'];
+}
 
-        $user = $collectionUsers->findOne(['username' => $username]);
-        // Decrease the user's actions by 1.
-        if ($user['actions'] > 0) {
-            $collectionUsers->updateOne(['username' => $username], ['$inc' => ['actions' => -1]]);
-            $name = str_contains($seed['name'], 'seed') ? 'seed' : 'small_crops_0';
-            $collectionUsers->updateOne(['username' => $username, 'inventory.name' => $name], ['$inc' => ['inventory.$.quantity' => -1]]);
-            $collectionUsers->updateOne(
-                [
-                    'username' => $username,
-                    'inventory' => [
-                        '$elemMatch' => [
-                            'name' => $name,
-                            'quantity' => ['$lte' => 0]
-                        ]
-                    ]
-                ],
-                [
-                    '$pull' => ['inventory' => ['name' => $name]]
-                ]
-            );
-        }
+// Get the tile ID.
+function getTileID($lon, $lat, $gridSize)
+{
+    $tileX = floor($lon / $gridSize);
+    $tileY = floor($lat / $gridSize);
+    return $tileX . '_' . $tileY;
+}
 
-        return $currentTile['seeds'];
+// Get a tile.
+function getTile($tileID)
+{
+    global $collectionTiles;
+    return $collectionTiles->findOne(['tileID' => $tileID]);
+}
+
+// Update the seeds of a tile.
+function updateTileSeeds($tileID, $seeds)
+{
+    global $collectionTiles;
+    $collectionTiles->updateOne(['tileID' => $tileID], ['$set' => ['seeds' => $seeds]]);
+}
+
+// Decrement the user action.
+function decrementUserAction($username, $itemName)
+{
+    global $collectionUsers;
+    $user = $collectionUsers->findOne(['username' => $username]);
+    if ($user['actions'] <= 0) return;
+
+    $collectionUsers->updateOne(['username' => $username], ['$inc' => ['actions' => -1]]);
+    $collectionUsers->updateOne(['username' => $username, 'inventory.name' => $itemName], ['$inc' => ['inventory.$.quantity' => -1]]);
+    $collectionUsers->updateOne(
+        ['username' => $username, 'inventory' => ['$elemMatch' => ['name' => $itemName, 'quantity' => ['$lte' => 0]]]],
+        ['$pull' => ['inventory' => ['name' => $itemName]]]
+    );
+}
+
+// Handle a POST request.
+function handlePostRequest($input)
+{
+    if (!isset($input['action'])) return ['error' => 'Invalid action.'];
+
+    $userLat = isset($input['lat']) ? floatval($input['lat']) : null;
+    $userLon = isset($input['lon']) ? floatval($input['lon']) : null;
+    $seed = $input['seed'] ?? null;
+    $username = $input['username'] ?? null;
+
+    if ($userLat === null || $userLon === null) return ['error' => 'Invalid location.'];
+    if ($seed === null) return ['error' => 'Invalid seed.'];
+    if ($username === null) return ['error' => 'Invalid username.'];
+
+    switch ($input['action']) {
+        case 'plantSeed':
+            return ['seeds' => plantSeed($userLat, $userLon, $seed, $username)];
+        case 'updatePlant':
+            return ['seeds' => updatePlant($userLat, $userLon, $seed, $username)];
+        default:
+            return ['error' => 'Unknown action.'];
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true);
-
-    if (isset($input['action'])) {
-        if ($input['action'] == 'plantSeed') {
-            $userLat = isset($input['lat']) ? floatval($input['lat']) : null;
-            $userLon = isset($input['lon']) ? floatval($input['lon']) : null;
-            $seed = isset($input['seed']) ? $input['seed'] : null;
-            $username = isset($input['username']) ? $input['username'] : null;
-
-            if ($userLat === null || $userLon === null) {
-                echo json_encode(['error' => 'Invalid location.']);
-                exit;
-            } else if ($seed === null) {
-                echo json_encode(['error' => 'Invalid seed.']);
-                exit;
-            } else if ($username === null) {
-                echo json_encode(['error' => 'Invalid username.']);
-                exit;
-            }
-
-            $response['seeds'] = plantSeed($userLat, $userLon, $seed, $username);
-
-            echo json_encode($response);
-        } else if ($input['action'] == 'updatePlant') {
-            $userLat = isset($input['lat']) ? floatval($input['lat']) : null;
-            $userLon = isset($input['lon']) ? floatval($input['lon']) : null;
-            $seed = isset($input['seed']) ? $input['seed'] : null;
-            $username = isset($input['username']) ? $input['username'] : null;
-
-            if ($userLat === null || $userLon === null) {
-                echo json_encode(['error' => 'Invalid location.']);
-                exit;
-            } else if ($seed === null) {
-                echo json_encode(['error' => 'Invalid seed.']);
-                exit;
-            } else if ($username === null) {
-                echo json_encode(['error' => 'Invalid username.']);
-                exit;
-            }
-
-            $response['seeds'] = updatePlant($userLat, $userLon, $seed, $username);
-
-            echo json_encode($response);
-        }
-    }
-} elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $userLat = isset($_GET['lat']) ? floatval($_GET['lat']) : null;
-    $userLon = isset($_GET['lon']) ? floatval($_GET['lon']) : null;
-    $range = 1;
-
-    if ($userLat === null || $userLon === null) {
-        echo json_encode(['error' => 'Missing latitude or longitude.']);
-        exit;
-    }
+// Handle a GET request.
+function handleGetRequest($userLat, $userLon, $range = 1)
+{
+    global $collectionTiles, $gridSize, $canvaSize;
 
     $lonIndex = floor($userLon / $gridSize);
     $latIndex = floor($userLat / $gridSize);
@@ -264,29 +214,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     for ($dx = -$range; $dx <= $range; $dx++) {
         for ($dy = -$range; $dy <= $range; $dy++) {
-            $currentLonIndex = $lonIndex + $dx;
-            $currentLatIndex = $latIndex + $dy;
-            $tileID = "{$currentLonIndex}_{$currentLatIndex}";
+            $tileID = ($lonIndex + $dx) . '_' . ($latIndex + $dy);
+            $currentTile = getTile($tileID);
 
-            $currentTile = $collectionTiles->findOne(['tileID' => $tileID]);
-
-            if ($currentTile) {
-                $response[$tileID] = $currentTile;
-            } else {
-                $newTile = [
+            if (!$currentTile) {
+                $currentTile = [
                     'tileID' => $tileID,
                     'seeds' => [],
                     'environment' => generateRandomEnvironment($canvaSize)
                 ];
-                $collectionTiles->insertOne($newTile);
-                $response[$tileID] = $newTile;
+                $collectionTiles->insertOne($currentTile);
             }
 
             if ($dx === 0 && $dy === 0) {
-                $response[$tileID]['lifeforms'] = generateRandomLifeforms($canvaSize);
+                $currentTile['lifeforms'] = generateRandomLifeforms($canvaSize);
             }
+
+            $response[$tileID] = $currentTile;
         }
     }
 
-    echo json_encode($response);
+    return $response;
+}
+
+// Main entry point.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    echo json_encode(handlePostRequest($input));
+} elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $userLat = isset($_GET['lat']) ? floatval($_GET['lat']) : null;
+    $userLon = isset($_GET['lon']) ? floatval($_GET['lon']) : null;
+
+    if ($userLat === null || $userLon === null) {
+        echo json_encode(['error' => 'Missing latitude or longitude.']);
+    } else {
+        echo json_encode(handleGetRequest($userLat, $userLon));
+    }
 }

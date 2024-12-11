@@ -1,9 +1,13 @@
 <?php
 include 'db.php';
 
+// Start session.
 session_start();
 
+// Initialize response message.
 $msg = array();
+
+// Return user info if logged in.
 if ($_SESSION['username']) {
     $user = $collectionUsers->findOne(['username' => $_SESSION['username']]);
 

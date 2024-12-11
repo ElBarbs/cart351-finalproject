@@ -1,12 +1,15 @@
 <?php
 
+// Start session.
 session_start();
 
+// Redirect to login if not logged in.
 if (!isset($_SESSION['username'])) {
   header('Location: /login.php');
   exit();
 }
 
+// Logout.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   session_destroy();
   echo json_encode(['response' => 'success']);

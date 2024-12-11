@@ -26,32 +26,32 @@ export class Map {
   };
 
   drawMiniMap = (p) => {
-    const mapX = (p.width - MAP_WIDTH) / 2; // Center horizontally
+    const mapX = (p.width - MAP_WIDTH) / 2;
     const mapY = 10;
 
-    p.fill(200, 200, 200, 150); // Semi-transparent background
-    p.rect(mapX, mapY, MAP_WIDTH, MAP_HEIGHT); // Draw mini-map background
+    p.fill(200, 200, 200, 150);
+    p.rect(mapX, mapY, MAP_WIDTH, MAP_HEIGHT);
 
-    const mapLongitudeRange = 360; // Total longitude range (from -180 to 180)
-    const mapLatitudeRange = 180; // Total latitude range (from -90 to 90)
+    const mapLongitudeRange = 360; // Total longitude range (from -180 to 180).
+    const mapLatitudeRange = 180; // Total latitude range (from -90 to 90).
 
     // Calculate user's position on the mini-map.
     const mapUserX =
       mapX +
       ((GameState.userLocation.longitude + 180) / mapLongitudeRange) *
-        MAP_WIDTH; // Convert longitude to mini-map X
+        MAP_WIDTH;
     const mapUserY =
       mapY +
-      ((90 - GameState.userLocation.latitude) / mapLatitudeRange) * MAP_HEIGHT; // Convert latitude to mini-map Y
+      ((90 - GameState.userLocation.latitude) / mapLatitudeRange) * MAP_HEIGHT;
 
     // Draw grid lines on the mini-map for better orientation.
     p.stroke(150);
     p.strokeWeight(1);
     for (let i = 0; i <= MAP_WIDTH; i += MAP_WIDTH / 10) {
-      p.line(mapX + i, mapY, mapX + i, mapY + MAP_HEIGHT); // Vertical lines
+      p.line(mapX + i, mapY, mapX + i, mapY + MAP_HEIGHT); // Vertical lines.
     }
     for (let i = 0; i <= MAP_HEIGHT; i += MAP_HEIGHT / 10) {
-      p.line(mapX, mapY + i, mapX + MAP_WIDTH, mapY + i); // Horizontal lines
+      p.line(mapX, mapY + i, mapX + MAP_WIDTH, mapY + i); // Horizontal lines.
     }
 
     // Highlight X and Y axes.
@@ -72,7 +72,7 @@ export class Map {
     // Draw position coordinates.
     p.fill(0);
     p.textSize(14);
-    p.textAlign(p.CENTER, p.CENTER); // Center the text
+    p.textAlign(p.CENTER, p.CENTER);
     p.text(
       `(${GameState.tile.coords.x}, ${GameState.tile.coords.y})`,
       mapX + MAP_WIDTH / 2,

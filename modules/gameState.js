@@ -43,6 +43,7 @@ const GameState = (() => {
       GameState.instance = this;
     }
 
+    // Set the user's location and initialize the game state.
     setUserLocation = (position) => {
       this.userLocation.longitude = position.coords.longitude;
       this.userLocation.latitude = position.coords.latitude;
@@ -63,6 +64,7 @@ const GameState = (() => {
       });
     };
 
+    // Load the assets are needed for the current tile.
     getTileAssets = (p) => {
       const assets = {};
       const allItems = [
@@ -80,6 +82,7 @@ const GameState = (() => {
       return assets;
     };
 
+    // Fetch the game data for the current tile and the surrounding tiles.
     fetchWorldData = async () => {
       try {
         const response = await fetch(
@@ -94,10 +97,13 @@ const GameState = (() => {
       }
     };
 
+    // Align the environments items to the grid and update the world state.
     processWorldData = (data, tileX, tileY) => {
       const currentTile = data[`${tileX}_${tileY}`] || {};
 
       this.tile.seeds = currentTile.seeds || [];
+
+      this.tile.lifeforms = currentTile.lifeforms || [];
 
       this.tile.environment = (currentTile.environment || []).map((item) => ({
         ...item,
@@ -107,33 +113,6 @@ const GameState = (() => {
 
       Object.assign(this.world, data);
     };
-
-    placeSeed = async (newSeed) => {
-      try {
-        const response = await fetch(API_ENDPOINTS.GET_GAME_DATA, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "plantSeed",
-            lat: this.userLocation.latitude,
-            lon: this.userLocation.longitude,
-            seed: newSeed,
-            username: this.user.username,
-          }),
-        });
-
-        const data = await response.json();
-        this.updateSeedData(data);
-      } catch (error) {
-        console.error("Error adding seed:", error);
-      }
-    };
-
-    updateSeedData(data) {
-      this.tile.seeds = data.seeds;
-      this.world[`${this.tile.coords.x}_${this.tile.coords.y}`].seeds =
-        this.tile.seeds;
-    }
   }
 
   return new GameState();

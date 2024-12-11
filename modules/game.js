@@ -39,11 +39,13 @@ export class Game {
     }, this.containerID);
   };
 
+  // Toggle between the tile view and the world view.
   toggleView = () => {
     GameState.isTileView = !GameState.isTileView;
     this.p.redraw();
   };
 
+  // Draw the tile view with the environment, seeds, and lifeforms.
   drawTileView = () => {
     this.p.cursor(this.p.ARROW);
     this.drawBackground();
@@ -53,6 +55,7 @@ export class Game {
     this.drawCursor();
   };
 
+  // Draw the grass background for the tile.
   drawBackground = () => {
     const p = this.p;
 
@@ -63,6 +66,7 @@ export class Game {
     }
   };
 
+  // Draw the environment items on the tile.
   drawEnvironment = () => {
     GameState.tile.environment.forEach((item) => {
       const img = this.assets[item.name];
@@ -70,6 +74,7 @@ export class Game {
     });
   };
 
+  // Draw the plants (seeds) on the tile.
   drawPlants = () => {
     GameState.tile.seeds.forEach((seed) => {
       const img = this.assets[seed.name];
@@ -77,6 +82,7 @@ export class Game {
     });
   };
 
+  // Draw the lifeforms on the tile.
   drawLifeforms = () => {
     GameState.tile.lifeforms.forEach((lifeform) => {
       const img = this.assets[lifeform.name];
@@ -90,6 +96,7 @@ export class Game {
     });
   };
 
+  // Draw the cursor with the selected item.
   drawCursor = () => {
     const p = this.p;
 
@@ -110,6 +117,7 @@ export class Game {
     }
   };
 
+  // Draw the world view with the user's current position highlighted.
   drawWorldView = () => {
     const p = this.p;
     const subCellSize = p.width / 3 / GAME_CONFIG.GRID_DIMENSION;
@@ -135,6 +143,7 @@ export class Game {
     }
   };
 
+  // Draw a border around the current user's position.
   drawHighlightBorder = (x, y) => {
     const p = this.p;
     p.noFill();
@@ -143,6 +152,7 @@ export class Game {
     p.rect(x, y, p.width / 3, p.height / 3);
   };
 
+  // Get the color for an item based on its name.
   getItemColor = (name) => {
     if (name.includes("rock")) return "#A9A9A9";
     if (name.includes("grass")) return "#228B22";
@@ -151,6 +161,7 @@ export class Game {
     return "#4C9557";
   };
 
+  // Draw environment and seeds for a single cell in the world view.
   drawCellData = (cellData, offsetX, offsetY, subCellSize) => {
     cellData.environment?.forEach((item) =>
       this.drawItem(
@@ -172,6 +183,7 @@ export class Game {
     );
   };
 
+  // Draw a single item on the world view.
   drawItem = (item, offsetX, offsetY, subCellSize, color) => {
     const p = this.p;
 
@@ -185,6 +197,7 @@ export class Game {
     p.rect(envX + subCellSize / 2 - 2.5, envY + subCellSize / 2 - 2.5, 5, 5);
   };
 
+  // Perform an action based on the selected item.
   doAction = async () => {
     const p = this.p;
 
@@ -209,6 +222,7 @@ export class Game {
     }
   };
 
+  // Action handlers for different item types.
   actionHandlers = {
     seed: async (gridX, gridY) => {
       if (this.isCellOccupied(gridX, gridY)) {
@@ -221,6 +235,7 @@ export class Game {
           item.x === gridX && item.y === gridY && item.name === "small_crops_0"
       );
 
+      // If a crop already exists, increment its state.
       if (existingCrop) {
         existingCrop.state++;
         existingCrop.variant = variant;
@@ -234,6 +249,7 @@ export class Game {
 
         await updatePlant(existingCrop);
       } else {
+        // Otherwise, plant the seed directly.
         const newSeed = {
           x: gridX,
           y: gridY,
@@ -267,6 +283,7 @@ export class Game {
     },
   };
 
+  // Check if the cell is occupied by a seed or environment item.
   isCellOccupied = (gridX, gridY) => {
     return (
       GameState.tile.seeds.some(
@@ -279,6 +296,7 @@ export class Game {
     );
   };
 
+  // Update the action count displayed on the UI.
   updateActionCount = () => {
     document.getElementById(
       "actions-count"

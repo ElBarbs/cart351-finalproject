@@ -1,4 +1,5 @@
 import { GAME_CONFIG } from "./config.js";
+import GameState from "./gameState.js";
 
 export function drawImageWithRatio(p, img, x, y, size = GAME_CONFIG.CELL_SIZE) {
   if (img.width < img.height) {
@@ -10,4 +11,10 @@ export function drawImageWithRatio(p, img, x, y, size = GAME_CONFIG.CELL_SIZE) {
   } else {
     p.image(img, x, y, size, size);
   }
+}
+
+export function updateActionCount() {
+  document.getElementById(
+    "actions-count"
+  ).innerText = `${GameState.user.actions}/3`;
 }

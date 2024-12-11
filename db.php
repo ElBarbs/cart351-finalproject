@@ -11,6 +11,8 @@ $uri = $_ENV['MONGODB_URI'];
 try {
     // Connect to MongoDB Atlas.
     $client = new MongoDB\Client($uri);
+
+    // Get the collections.
     $collectionTiles = $client->FinalProject->tiles;
     $collectionUsers = $client->FinalProject->users;
 } catch (Exception $e) {

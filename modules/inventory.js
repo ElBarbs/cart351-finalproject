@@ -32,12 +32,14 @@ export class Inventory {
     }, this.containerID);
   };
 
+  // Calculate the x and y position of the item based on the index.
   getItemIndex = (index, inventoryX, inventoryY) => {
     const itemX = inventoryX + 12.5 + (index % 5) * (CELL_SIZE + 17.5);
     const itemY = inventoryY + 15 + Math.floor(index / 5) * (CELL_SIZE + 10);
     return [itemX, itemY];
   };
 
+  // Draw the inventory on the canvas.
   drawInventory = (p) => {
     const inventoryX = 10;
     const inventoryY = 10;
@@ -87,7 +89,7 @@ export class Inventory {
       GameState.user.inventory.forEach((item, index) => {
         const [itemX, itemY] = this.getItemIndex(index, inventoryX, inventoryY);
 
-        // Check if the mouse is within the bounds of the item
+        // Check if the mouse is within the bounds of the item.
         if (
           p.mouseX > itemX &&
           p.mouseX < itemX + CELL_SIZE &&
