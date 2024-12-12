@@ -4,9 +4,12 @@ include 'db.php';
 // Start session.
 session_start();
 
+// Set base path.
+$basePath = dirname($_SERVER['PHP_SELF']);
+
 // Redirect to index if logged in.
 if (isset($_SESSION['username'])) {
-    header('Location: /');
+    header('Location: ' . $basePath . '/');
     exit;
 }
 
@@ -130,11 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-    <header>
-        <a href="/">
-            <h2>Digital Garden</h2>
-        </a>
-    </header>
+    <?php include('header.php'); ?>
     <main>
         <div id="userFormContainer">
             <form action="" id="formRegister">
@@ -158,10 +157,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         document.getElementById("formRegister").addEventListener('submit', function(e) {
             e.preventDefault();
 
+            const basePath = '<?php echo $basePath; ?>';
+
             const form = e.target;
             const data = new FormData(form);
 
-            fetch('/register.php', {
+            fetch(`${basePath}/register.php`, {
                     method: 'POST',
                     body: data,
                 })
@@ -173,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         form.reset();
                         inputUsername.focus();
                     } else {
-                        window.location.href = '/';
+                        window.location.href = `${basePath}/index.php`;
                     }
                 });
         });

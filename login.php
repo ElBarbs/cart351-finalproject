@@ -4,9 +4,12 @@ include 'db.php';
 // Start session.
 session_start();
 
+// Set base path.
+$basePath = dirname($_SERVER['PHP_SELF']);
+
 // Redirect to index if logged in.
 if (isset($_SESSION['username'])) {
-    header('Location: /');
+    header('Location: ' . $basePath . '/');
     exit;
 }
 
@@ -60,11 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-    <header>
-        <a href="/">
-            <h2>Digital Garden</h2>
-        </a>
-    </header>
+    <?php include('header.php'); ?>
     <main>
         <div id="userFormContainer">
             <form action="" id="formLogin">
@@ -72,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="text" id="inputUsername" name="username" />
                 <label for="password">Password</label>
                 <input type="password" id="inputPassword" name="password" />
-                <span>Don't have an account yet? <a href="/register.php">Register</a></span>
+                <span>Don't have an account yet? <a id="linkRegister">Register</a></span>
                 <button id="btnLogin" type="submit">Login</button>
                 <span id="msgError"></span>
             </form>
@@ -82,15 +81,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
     window.onload = function() {
+        const basePath = '<?php echo $basePath; ?>';
+
+        const linkRegister = document.getElementById("linkRegister");
+        linkRegister.href = `${basePath}/register.php`;
+
         const inputUsername = document.getElementById("inputUsername");
         inputUsername.focus();
+
         document.getElementById("formLogin").addEventListener('submit', function(e) {
             e.preventDefault();
 
             const form = e.target;
             const data = new FormData(form);
 
-            fetch('/login.php', {
+            fetch(`${basePath}/login.php`, {
                     method: 'POST',
                     body: data,
                 })
@@ -102,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         form.reset();
                         inputUsername.focus();
                     } else {
-                        window.location.href = '/';
+                        window.location.href = `${basePath}/index.php`;
                     }
                 });
         });

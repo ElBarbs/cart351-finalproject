@@ -1,11 +1,13 @@
 <?php
-
 // Start session.
 session_start();
 
+// Set base path.
+$basePath = dirname($_SERVER['PHP_SELF']);
+
 // Redirect to login if not logged in.
 if (!isset($_SESSION['username'])) {
-  header('Location: /login.php');
+  header('Location: ' . $basePath . '/login.php');
   exit();
 }
 
@@ -36,11 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-  <header>
-    <a href="/">
-      <h2>Digital Garden</h2>
-    </a>
-  </header>
+  <?php include('header.php'); ?>
   <main>
     <div id="game"></div>
     <div id="ui-container">

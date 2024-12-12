@@ -2,7 +2,12 @@ import GameState from "./modules/gameState.js";
 import { updateActionCount } from "./modules/utils.js";
 
 window.onload = () => {
-  fetch("get-user.php", {
+  const basePath = window.location.pathname.replace(/\/[^/]+$/, "");
+
+  const linkHeader = document.getElementById("linkHeader");
+  linkHeader.href = `${basePath}/index.php`;
+
+  fetch(`${basePath}/get-user.php`, {
     method: "GET",
   })
     .then((response) => response.json())
@@ -21,14 +26,14 @@ window.onload = () => {
     });
 
   document.getElementById("btnLogout").addEventListener("click", function () {
-    fetch("index.php", {
+    fetch(`${basePath}/index.php`, {
       method: "POST",
     })
       .then((response) => response.json())
       .then((data) => {
         if (data.response === "success") {
           // Redirect to the login page.
-          window.location.href = "/login.php";
+          window.location.href = `${basePath}/login.php`;
         }
       });
   });
