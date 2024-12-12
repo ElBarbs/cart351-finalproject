@@ -1,6 +1,6 @@
 # Project Overview
 
-This project is a web-based game called "Digital Garden" where users can plant seeds, grow plants, and explore a virtual world. The game is built using HTML, CSS, and JavaScript with a PHP backend for user registration and login. The game uses a MongoDB database to store user information, game data, and plant growth stages.
+This web-based game allows users to grow plants and manage a virtual garden tied to their real-world location on Earth. It leverages HTML, CSS, and JavaScript for the frontend, with a PHP backend. A MongoDB Atlas database is used to store user information and game data. P5.js is utilized to render the game world and user interface components.
 
 ## Files
 
