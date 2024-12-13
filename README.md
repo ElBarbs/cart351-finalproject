@@ -1,6 +1,11 @@
 # Project Overview
 
-This web-based game allows users to grow plants and manage a virtual garden tied to their real-world location on Earth. It leverages HTML, CSS, and JavaScript for the frontend, with a PHP backend. A MongoDB Atlas database is used to store user information and game data. P5.js is utilized to render the game world and user interface components.
+This web-based game allows users to grow plants and manage a virtual garden tied to their real-world location on Earth.
+
+The frontend is composed of HTML, CSS and JavaScript. The JavaScript library p5.js is used to render the game world and user interface components (inventory and map).
+
+The backend utilized PHP, coupled with a MongoDB database. The database is hosted on MongoDB Atlas, making it easily accessible using the MongoDB PHP driver and a private URI stored in an .env file. The environment variable is loaded with the help of the “PHP dotenv” library. Composer was used to facilitate the installation and management of all the dependencies.
+
 
 ## Files
 
