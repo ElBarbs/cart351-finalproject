@@ -1,13 +1,15 @@
 <?php
-// Start session.
-session_start();
 
-// Set base path.
-$basePath = dirname($_SERVER['PHP_SELF']);
+include 'path.php';
+
+// Start the session if not already started.
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 
 // Redirect to login if not logged in.
 if (!isset($_SESSION['username'])) {
-  header('Location: ' . $basePath . '/login.php');
+  header('Location: ' . $BASE_PATH . 'login.php');
   exit();
 }
 

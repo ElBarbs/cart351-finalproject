@@ -1,9 +1,11 @@
 <?php
-$basePath = dirname($_SERVER['PHP_SELF']);
+
+include 'path.php';
+
 ?>
 
 <header>
-    <a id="linkHeader" href="<?php echo $basePath; ?>/index.php">
+    <a href="<?php echo $BASE_PATH ?>">
         <h2>Digital Garden</h2>
     </a>
 </header>

@@ -2,10 +2,7 @@ import GameState from "./modules/gameState.js";
 import { updateActionCount } from "./modules/utils.js";
 
 window.onload = () => {
-  const basePath = window.location.pathname.replace(/\/[^/]+$/, "");
-
-  const linkHeader = document.getElementById("linkHeader");
-  linkHeader.href = `${basePath}/index.php`;
+  const basePath = window.location.pathname.replace(/\/[^/]*$/, "");
 
   fetch(`${basePath}/get-user.php`, {
     method: "GET",

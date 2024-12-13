@@ -1,15 +1,16 @@
 <?php
+
+include 'path.php';
 include 'db.php';
 
-// Start session.
-session_start();
-
-// Set base path.
-$basePath = dirname($_SERVER['PHP_SELF']);
+// Start the session if not already started.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Redirect to index if logged in.
 if (isset($_SESSION['username'])) {
-    header('Location: ' . $basePath . '/');
+    header('Location: ' . $BASE_PATH);
     exit;
 }
 
@@ -44,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-
 ?>
 
 <!DOCTYPE html>
@@ -58,9 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div id="userFormContainer">
             <form action="" id="formLogin">
                 <label for="username">Username</label>
-                <input type="text" id="inputUsername" name="username" />
+                <input type="text" id="inputUsername" title="username" name="username" />
                 <label for="password">Password</label>
-                <input type="password" id="inputPassword" name="password" />
+                <input type="password" id="inputPassword" title="password" name="password" />
                 <span>Don't have an account yet? <a id="linkRegister">Register</a></span>
                 <button id="btnLogin" type="submit">Login</button>
                 <span id="msgError"></span>
@@ -71,10 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
     window.onload = function() {
-        const basePath = '<?php echo $basePath; ?>';
+        const basePath = '<?php echo $BASE_PATH; ?>';
 
         const linkRegister = document.getElementById("linkRegister");
-        linkRegister.href = `${basePath}/register.php`;
+        linkRegister.href = `${basePath}register.php`;
 
         const inputUsername = document.getElementById("inputUsername");
         inputUsername.focus();
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const form = e.target;
             const data = new FormData(form);
 
-            fetch(`${basePath}/login.php`, {
+            fetch(`${basePath}login.php`, {
                     method: 'POST',
                     body: data,
                 })
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         form.reset();
                         inputUsername.focus();
                     } else {
-                        window.location.href = `${basePath}/index.php`;
+                        window.location.href = basePath;
                     }
                 });
         });

@@ -1,15 +1,16 @@
 <?php
+
+include 'path.php';
 include 'db.php';
 
-// Start session.
-session_start();
-
-// Set base path.
-$basePath = dirname($_SERVER['PHP_SELF']);
+// Start the session if not already started.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Redirect to index if logged in.
 if (isset($_SESSION['username'])) {
-    header('Location: ' . $basePath . '/');
+    header('Location: ' . $BASE_PATH);
     exit;
 }
 
@@ -114,7 +115,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-
 ?>
 
 <!DOCTYPE html>
@@ -127,12 +127,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <main>
         <div id="userFormContainer">
             <form action="" id="formRegister">
-                <label for="username">Username</label>
-                <input type="text" id="inputUsername" name="username" />
-                <label for="password">Password</label>
-                <input type="password" id="inputPassword" name="password" />
-                <label for="repeatPassword">Repeat Password</label>
-                <input type="password" id="inputRepeatPassword" name="repeatPassword" />
+                <label for="Username">Username</label>
+                <input type="text" id="inputUsername" title="Username" name="username" />
+                <label for="Password">Password</label>
+                <input type="password" id="inputPassword" title="Password" name="password" />
+                <label for="Repeat Password">Repeat Password</label>
+                <input type="password" id="inputRepeatPassword" title="Repeat Password" name="repeatPassword" />
                 <button id="btnRegister" type="submit">Register</button>
                 <span id="msgError"></span>
             </form>
@@ -142,17 +142,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
     window.onload = function() {
+        const basePath = '<?php echo $BASE_PATH; ?>';
+
         const inputUsername = document.getElementById("inputUsername");
         inputUsername.focus();
+
         document.getElementById("formRegister").addEventListener('submit', function(e) {
             e.preventDefault();
-
-            const basePath = '<?php echo $basePath; ?>';
 
             const form = e.target;
             const data = new FormData(form);
 
-            fetch(`${basePath}/register.php`, {
+            fetch(`${basePath}register.php`, {
                     method: 'POST',
                     body: data,
                 })
@@ -164,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         form.reset();
                         inputUsername.focus();
                     } else {
-                        window.location.href = `${basePath}/index.php`;
+                        window.location.href = basePath;
                     }
                 });
         });
